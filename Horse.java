@@ -55,6 +55,7 @@ public class Horse
     public void goBackToStart()
     {
         this.distanceTravelled = 0;
+        this.fallen = false;
     }
     
     public boolean hasFallen()
@@ -64,9 +65,7 @@ public class Horse
 
     public void moveForward()
     {
-        if (!this.fallen) {
-            this.distanceTravelled += 1;
-        }
+        this.distanceTravelled += 1;
     }
 
     public void setConfidence(double newConfidence)
