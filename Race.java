@@ -1,3 +1,4 @@
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.lang.Math;
 
@@ -5,7 +6,7 @@ import java.lang.Math;
  * A three-horse race, each horse running in its own lane
  * for a given distance
  * 
- * @author McRaceface
+* @author McRaceface
  * @version 1.0
  */
 public class Race
@@ -14,6 +15,8 @@ public class Race
     private Horse lane1Horse;
     private Horse lane2Horse;
     private Horse lane3Horse;
+    private static final double fallProb = 0.01;
+    private static Scanner scanner = new Scanner(System.in); // Single Scanner object for the entire class
 
     /**
      * Constructor for objects of class Race
@@ -23,6 +26,9 @@ public class Race
      */
     public Race(int distance)
     {
+        if(distance <= 0){
+            throw new IllegalArgumentException("Race length must be positive");
+        }
         // initialise instance variables
         raceLength = distance;
         lane1Horse = null;
@@ -40,15 +46,42 @@ public class Race
     {
         if (laneNumber == 1)
         {
-            lane1Horse = theHorse;
+            if(lane1Horse != null){
+                System.out.println("Lane 1 already has a horse in it!");
+                System.out.println("Do you want to overwrite this horse? (y/n)");
+                String ans = scanner.nextLine();
+                if(ans.equalsIgnoreCase("y")){
+                    lane1Horse = theHorse;
+                }
+            }else{
+                lane1Horse = theHorse;
+            }
         }
         else if (laneNumber == 2)
         {
-            lane2Horse = theHorse;
+            if(lane2Horse != null){
+                System.out.println("Lane 2 already has a horse in it!");
+                System.out.println("Do you want to overwrite this horse? (y/n)");
+                String ans = scanner.nextLine();
+                if(ans.equalsIgnoreCase("y")){
+                    lane2Horse = theHorse;
+                }
+            }else{
+                lane2Horse = theHorse;
+            }
         }
         else if (laneNumber == 3)
         {
-            lane3Horse = theHorse;
+            if(lane3Horse != null){
+                System.out.println("Lane 3 already has a horse in it!");
+                System.out.println("Do you want to overwrite this horse? (y/n)");
+                String ans = scanner.nextLine();
+                if(ans.equalsIgnoreCase("y")){
+                    lane3Horse = theHorse;
+                }
+            }else{
+                lane3Horse = theHorse;
+            }
         }
         else
         {
@@ -68,30 +101,57 @@ public class Race
         boolean finished = false;
         
         //reset all the lanes (all horses not fallen and back to 0). 
-        lane1Horse.goBackToStart();
-        lane2Horse.goBackToStart();
-        lane3Horse.goBackToStart();
+        if(lane1Horse != null)lane1Horse.goBackToStart();
+        if(lane2Horse != null)lane2Horse.goBackToStart();
+        if(lane3Horse != null)lane3Horse.goBackToStart();
                       
         while (!finished)
         {
             //move each horse
-            moveHorse(lane1Horse);
-            moveHorse(lane2Horse);
-            moveHorse(lane3Horse);
+            if(lane1Horse != null) moveHorse(lane1Horse);
+            if(lane2Horse != null) moveHorse(lane2Horse);
+            if(lane3Horse != null) moveHorse(lane3Horse);
                         
             //print the race positions
             printRace();
             
             //if any of the three horses has won the race is finished
-            if ( raceWonBy(lane1Horse) || raceWonBy(lane2Horse) || raceWonBy(lane3Horse) )
-            {
+            if((lane1Horse != null && raceWonBy(lane1Horse)) || 
+                (lane2Horse != null && raceWonBy(lane2Horse)) || 
+                (lane3Horse != null && raceWonBy(lane3Horse)) ){
                 finished = true;
+            }
+
+            //if all three horses have fallen, the race is finished with no winner
+            if((lane1Horse != null && lane1Horse.hasFallen()) &&
+               (lane2Horse != null && lane2Horse.hasFallen()) &&
+               (lane3Horse != null && lane3Horse.hasFallen())){
+                System.out.println("All horses have fallen. No winner.");
+                return;
             }
            
             //wait for 100 milliseconds
             try{ 
                 TimeUnit.MILLISECONDS.sleep(100);
-            }catch(Exception e){}
+            }catch(InterruptedException e){
+                Thread.currentThread().interrupt();
+                System.out.println("Race interrupted");
+                return;
+            }
+        }
+
+        // Finds the winner and then prints it out
+        Horse winner = null;
+        if(lane1Horse != null && raceWonBy(lane1Horse)){
+            winner = lane1Horse;
+        }else if(lane2Horse != null && raceWonBy(lane2Horse)){
+            winner = lane2Horse;
+        }else if(lane3Horse != null && raceWonBy(lane3Horse)){
+            winner = lane3Horse;
+        }
+
+        if(winner != null){
+            System.out.println("Winner is " + winner.getName() + "!");
         }
     }
     
@@ -117,7 +177,7 @@ public class Race
             //the probability that the horse will fall is very small (max is 0.1)
             //but will also will depends exponentially on confidence 
             //so if you double the confidence, the probability that it will fall is *2
-            if (Math.random() < (0.1*theHorse.getConfidence()*theHorse.getConfidence()))
+            if (Math.random() < (fallProb * theHorse.getConfidence() * theHorse.getConfidence()))
             {
                 theHorse.fall();
             }
@@ -132,7 +192,7 @@ public class Race
      */
     private boolean raceWonBy(Horse theHorse)
     {
-        if (theHorse.getDistanceTravelled() == raceLength)
+        if (theHorse.getDistanceTravelled() >= raceLength)
         {
             return true;
         }
@@ -152,13 +212,13 @@ public class Race
         multiplePrint('=',raceLength+3); //top edge of track
         System.out.println();
         
-        printLane(lane1Horse);
+        if (lane1Horse != null) printLane(lane1Horse);
         System.out.println();
         
-        printLane(lane2Horse);
+        if (lane2Horse != null) printLane(lane2Horse);
         System.out.println();
         
-        printLane(lane3Horse);
+        if (lane3Horse != null) printLane(lane3Horse);
         System.out.println();
         
         multiplePrint('=',raceLength+3); //bottom edge of track
@@ -188,7 +248,7 @@ public class Race
         //else print the horse's symbol
         if(theHorse.hasFallen())
         {
-            System.out.print('\u2322');
+            System.out.print('X'); // Print 'X' emoji to signal a horse has fallen
         }
         else
         {
@@ -217,5 +277,19 @@ public class Race
             System.out.print(aChar);
             i = i + 1;
         }
+    }
+
+    public static void main(String[] args) {
+        Race race = new Race(100); // Example race length
+        Horse horse1 = new Horse('S', "Sora", 0.7);
+        Horse horse2 = new Horse('M', "Midnight", 0.5);
+        Horse horse3 = new Horse('G', "Gallop", 0.2);
+
+        race.addHorse(horse1, 1);
+        race.addHorse(horse2, 2);
+        race.addHorse(horse3, 3);
+
+        race.startRace();
+        scanner.close(); // Close the scanner at the end of the program
     }
 }
