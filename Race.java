@@ -141,7 +141,8 @@ public class Race {
         // Announce the winner
         if (winner != null) {
             System.out.println("Winner is " + winner.getName() + "!");
-        }
+            winner.setConfidence(Math.min(1.0, winner.getConfidence() + 0.1)); // Winner gains confidence
+        } 
     }
 
     /**
@@ -160,7 +161,8 @@ public class Race {
 
             // Determine if the horse falls based on its confidence and fall probability
             if (Math.random() < (fallProb * theHorse.getConfidence() * theHorse.getConfidence())) {
-                theHorse.fall();
+                theHorse.fall();            
+                theHorse.setConfidence(Math.max(0.0, theHorse.getConfidence() - 0.05)); // Horse loses confidence when falling
             }
         }
     }
