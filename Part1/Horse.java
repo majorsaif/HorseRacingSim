@@ -70,8 +70,8 @@ public class Horse
 
     public void setConfidence(double newConfidence)
     {
-        if(newConfidence < 0){
-            this.confidence = 0;
+        if(newConfidence <= 0){
+            this.confidence = 0.1;
         }else if(newConfidence > 1){
             this.confidence = 1;
         }else{
